@@ -1,0 +1,62 @@
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <chrono>
+using namespace std;
+
+int main() {
+    int bucketSize, outputRate, n;
+
+    cout << "Enter bucket size (in KB): ";
+    cin >> bucketSize;
+
+    cout << "Enter output rate (in KB/s): ";
+    cin >> outputRate;
+
+    cout << "Enter number of incoming packets: ";
+    cin >> n;
+
+    vector<int> packets(n);
+    cout << "Enter sizes of " << n << " incoming packets (in KB):\n";
+    for (int i = 0; i < n; i++)
+        cin >> packets[i];
+
+    int currentBucket = 0;
+
+    cout << "\nTime\tPacket Size\tBucket Status\tAction\n";
+    cout << "---------------------------------------------\n";
+
+    for (int i = 0; i < n; i++) {
+        cout << i + 1 << "\t" << packets[i] << "\t\t";
+
+        if (packets[i] + currentBucket <= bucketSize) {
+            currentBucket += packets[i];
+            cout << currentBucket << "\t\tPacket accepted\n";
+        } else {
+            cout << currentBucket << "\t\tPacket dropped (overflow)\n";
+        }
+
+        // Leak packets at output rate
+        if (currentBucket > 0) {
+            int leaked = min(outputRate, currentBucket);
+            currentBucket -= leaked;
+        }
+
+        // Simulate 1 second delay (optional, for visualization)
+        this_thread::sleep_for(chrono::milliseconds(500));
+    }
+
+    // Leak remaining packets
+    int time = n + 1;
+    while (currentBucket > 0) {
+        cout << time++ << "\t-\t\t" << currentBucket << "\t\tLeaking...\n";
+        int leaked = min(outputRate, currentBucket);
+        currentBucket -= leaked;
+        this_thread::sleep_for(chrono::milliseconds(500));
+    }
+
+    cout << "---------------------------------------------\n";
+    cout << "Bucket empty. Transmission complete.\n";
+
+    return 0;
+}
