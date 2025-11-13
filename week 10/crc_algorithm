@@ -1,0 +1,46 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+string xor1(string a, string b) {
+    string result = "";
+    for (int i = 1; i < b.length(); i++)
+        result += (a[i] == b[i]) ? '0' : '1';
+    return result;
+}
+
+string mod2div(string dividend, string divisor) {
+    int pick = divisor.length();
+    string tmp = dividend.substr(0, pick);
+
+    int n = dividend.length();
+    while (pick < n) {
+        if (tmp[0] == '1')
+            tmp = xor1(divisor, tmp) + dividend[pick];
+        else
+            tmp = xor1(string(pick, '0'), tmp) + dividend[pick];
+        pick += 1;
+    }
+
+    if (tmp[0] == '1')
+        tmp = xor1(divisor, tmp);
+    else
+        tmp = xor1(string(pick, '0'), tmp);
+
+    return tmp.substr(tmp.length() - (divisor.length() - 1));
+}
+
+int main() {
+    string data = "101101";
+    string divisor = "1101";
+
+    int l_key = divisor.length();
+    string appended_data = data;
+    for (int i = 1; i < l_key; i++) appended_data += '0';
+
+    string remainder = mod2div(appended_data, divisor);
+    cout << "Remainder: " << remainder << endl;
+
+    string codeword = data + remainder;
+    cout << "Transmitted Frame: " << codeword << endl;
+}
